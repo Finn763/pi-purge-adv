@@ -17,9 +17,11 @@
 
 [pi coding agent](https://github.com/earendil-works/pi) stacks four layers on top of the model before your question ever leaves the box: a persona preamble, the built-in tools/rules/docs sections, a project-trust gate, and context compaction. pi-purge is an extension that replaces each of them with yours, using pi's own extension API — no model patching, no `dist/` surgery, one command to revert.
 
-```powershell
-pi install D:\code\pi-purge
+```bash
+pi install git:github.com/Finn763/pi-purge
 ```
+
+Clone-based install — no npm publish needed. `pi` clones into `<agent-dir>/git/github.com/Finn763/pi-purge`, registers it in `settings.packages`, and loads it in place. Pin a revision with `@main` or a tag: `pi install git:github.com/Finn763/pi-purge@main`.
 
 ---
 
@@ -86,12 +88,17 @@ Editing `prompt-inject.md` needs no restart — the extension re-reads it by mti
 
 ## Installation
 
+Anyone can install from the public repo — no npm publish, no local path:
+
 | Path | Command | What happens |
 |---|---|---|
-| Official | `pi install D:\code\pi-purge` | writes into `settings.packages`, loads in place, **no copying** |
-| CLI | `node bin/pi-purge.js apply` | also applies the 3 settings patches, creates the runtime dir, keeps a `.pipurge.bak` |
+| **Public (recommended)** | `pi install git:github.com/Finn763/pi-purge` | clones into `<agent-dir>/git/...`, writes `settings.packages`, loads in place |
+| Try once | `pi -e git:github.com/Finn763/pi-purge --print "hello"` | never touches settings |
+| From a checkout | `pi install ./pi-purge` | same as public route, but against your working tree |
+| CLI (patches settings too) | `node bin/pi-purge.js apply` | adds the 3 settings patches, creates the runtime dir, keeps a `.pipurge.bak` |
 | Copy mode | `node bin/pi-purge.js apply --copy` | installs into `<agent-dir>/extensions/pi-purge/`, so the checkout can be deleted |
-| One-shot | `pi -e D:\code\pi-purge --print "hello"` | never touches settings |
+
+`D:\code\pi-purge` in older snippets is just the author's working copy — substitute your own path, or use the git source above.
 
 Then start a new pi session (or `/reload`). In-session: `/purge` for status, `/purge mode force`, `/purge edit` for paths.
 

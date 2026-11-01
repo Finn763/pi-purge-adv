@@ -17,9 +17,11 @@
 
 [pi coding agent](https://github.com/earendil-works/pi) 在你这个问题交给模型之前，会自己叠四层：人格 preamble、内置 tools/rules/docs 三段、项目信任门、上下文压缩。pi-purge 是装在 pi 上的扩展，用 pi 自己的扩展 API 把这四层逐个换成你的——不改模型、不动 `dist/`、一条命令退回原样。
 
-```powershell
-pi install D:\code\pi-purge
+```bash
+pi install git:github.com/Finn763/pi-purge
 ```
+
+走 git 源，不需要发 npm。`pi` 会克隆到 `<agent-dir>/git/github.com/Finn763/pi-purge`，写进 `settings.packages`，就地加载。要固定版本就带 ref：`pi install git:github.com/Finn763/pi-purge@main`。
 
 ---
 
@@ -86,12 +88,17 @@ pi install D:\code\pi-purge
 
 ## 安装
 
+任何人从公开仓库直接装，不用发 npm、不用本地路径：
+
 | 方式 | 命令 | 说明 |
 |---|---|---|
-| 官方命令 | `pi install D:\code\pi-purge` | 写进 `settings.packages`，**就地加载不复制** |
-| 自带 CLI | `node bin/pi-purge.js apply` | 额外打 3 项 settings 补丁 + 建运行时目录 + 留 `.pipurge.bak` |
+| **公开源（推荐）** | `pi install git:github.com/Finn763/pi-purge` | 克隆到 `<agent-dir>/git/...`，写进 `settings.packages`，就地加载 |
+| 只试一次 | `pi -e git:github.com/Finn763/pi-purge --print "你好"` | 不进 settings，进程退出即散 |
+| 本地检出 | `pi install ./pi-purge` | 和公开源一样，只是指向你自己的工作树 |
+| 自带 CLI（顺手打补丁） | `node bin/pi-purge.js apply` | 额外打 3 项 settings 补丁 + 建运行时目录 + 留 `.pipurge.bak` |
 | 复制式 | `node bin/pi-purge.js apply --copy` | 装进 `<agent-dir>/extensions/pi-purge/`，仓库可随时删 |
-| 只试一次 | `pi -e D:\code\pi-purge --print "你好"` | 不进 settings，进程退出即散 |
+
+早先段落里的 `D:\code\pi-purge` 只是作者的工作目录，换成你自己的路径，或者直接用上面的 git 源。
 
 装完新开一个 pi 会话（或 `/reload`）。会话内 `/purge` 看状态、`/purge mode force` 切模式、`/purge edit` 打路径。
 
