@@ -1,0 +1,57 @@
+{
+  "name": "pi-purge",
+  "version": "0.2.0",
+  "description": "pi 破甲：拆掉 pi coding agent 的宿主层提示词、信任门与压缩层，按会话注入自定义人格",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "pi-coding-agent",
+    "prompt",
+    "system-prompt",
+    "harness",
+    "jailbreak",
+    "red-team"
+  ],
+  "pi": {
+    "extensions": [
+      "./src/index.js"
+    ]
+  },
+  "exports": {
+    ".": "./src/core.js",
+    "./extension": "./src/index.js"
+  },
+  "bin": {
+    "pi-purge": "bin/pi-purge.js"
+  },
+  "files": [
+    "src",
+    "bin",
+    "README.md",
+    "LICENSE",
+    "README.zh-CN.md"
+  ],
+  "scripts": {
+    "test": "node --test test/prompt.test.mjs test/extension.test.mjs test/core.test.mjs test/config.test.mjs test/retry.test.mjs",
+    "status": "node bin/pi-purge.js status",
+    "apply": "node bin/pi-purge.js apply"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-ai": "*",
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "author": "Finn763",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Finn763/pi-purge.git"
+  },
+  "homepage": "https://github.com/Finn763/pi-purge#readme",
+  "bugs": {
+    "url": "https://github.com/Finn763/pi-purge/issues"
+  }
+}
