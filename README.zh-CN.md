@@ -160,7 +160,7 @@ docs/FINAL-REPORT.md         结案报告
 npm test                                        # 54/54
 node bin/pi-purge.js status                     # 安装与补丁状态
 node bin/pi-purge.js doctor                     # 9 项自检
-pi -e D:\code\pi-purge --print "回复：OK"        # 确认扩展被 pi 调用
+pi -e git:github.com/Finn763/pi-purge --print "回复：OK"      # 确认扩展被 pi 调用
 ```
 
 ## 协议

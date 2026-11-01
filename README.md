@@ -160,7 +160,7 @@ docs/FINAL-REPORT.md         closing report
 npm test                                        # 54/54
 node bin/pi-purge.js status                     # install + patch state
 node bin/pi-purge.js doctor                     # 9 checks
-pi -e D:\code\pi-purge --print "reply: OK"      # prove pi loads it
+pi -e git:github.com/Finn763/pi-purge --print "reply: OK"   # prove pi loads it
 ```
 
 ## License
