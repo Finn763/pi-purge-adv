@@ -51,6 +51,15 @@ No back doors left: `payload` mode also rewrites the serialized system message a
 
 ---
 
+## How it runs
+
+![pi-purge-adv architecture](docs/architecture.svg)
+
+One request in, four harness layers replaced, one request out. The dashed line is `payload` mode scrubbing the serialized system message; the clause below is the anti-exfiltration rule appended to the persona.
+[▶ Interactive version](docs/architecture.html)
+
+---
+
 ## What the numbers say
 
 Primary target `deepseek/deepseek-flash` (DeepSeek V4.1 Flash). Banks: HarmBench / StrongREJECT / Safety-Prompts / JBB. Judge: `deepseek-v4-flash` with StrongREJECT rubric. Two arms, same items, paired:

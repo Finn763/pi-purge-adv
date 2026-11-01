@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "pi-purge-adv",
+    "subtitle": "拆掉宿主层，把这一轮还给模型",
+    "output": "architecture.zh-CN.html",
+    "quality_profile": "showcase",
+    "viewBox": [1020, 560],
+    "legend": {
+      "mode": "auto",
+      "entries": {
+        "external": { "label": "pi 之外" },
+        "backend": { "label": "pi 之内" },
+        "security": { "label": "注入规则" }
+      }
+    }
+  },
+  "components": [
+    {
+      "id": "prompt",
+      "type": "external",
+      "label": "你的提问",
+      "sublabel": "终端 / RPC",
+      "pos": [20, 200],
+      "size": [110, 72]
+    },
+    {
+      "id": "harness",
+      "type": "backend",
+      "label": "pi 宿主层",
+      "sublabel": "人格 · 规则 · 信任门 · 压缩",
+      "pos": [238, 182],
+      "size": [180, 108],
+      "tag": "4 层"
+    },
+    {
+      "id": "purge",
+      "type": "backend",
+      "label": "pi-purge-adv",
+      "sublabel": "三个扩展钩子",
+      "pos": [526, 182],
+      "size": [210, 108],
+      "tag": "四种模式"
+    },
+    {
+      "id": "clause",
+      "type": "security",
+      "label": "防泄漏附则",
+      "sublabel": "不复述 · 不翻译 · 不导出",
+      "pos": [530, 372],
+      "size": [200, 72]
+    },
+    {
+      "id": "model",
+      "type": "external",
+      "label": "deepseek-flash",
+      "sublabel": "服务端对齐",
+      "pos": [830, 200],
+      "size": [150, 72]
+    }
+  ],
+  "connections": [
+    { "id": "ask", "from": "prompt", "to": "harness", "label": "提问", "variant": "emphasis" },
+    { "id": "strip", "from": "harness", "to": "purge", "label": "替换四层", "variant": "emphasis" },
+    { "id": "emit", "from": "purge", "to": "model", "label": "system + 工具", "variant": "emphasis" },
+    { "id": "scrub", "from": "purge", "to": "model", "label": "载荷擦洗", "variant": "dashed", "fromSide": "bottom", "toSide": "bottom", "labelDy": 44 },
+    { "id": "append", "from": "purge", "to": "clause", "label": "追加", "variant": "dashed", "fromSide": "bottom", "toSide": "top" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "实测（deepseek-flash）",
+      "items": [
+        "宿主泄漏 2/50 → 11/50",
+        "有害交付 9/120 → 13/120",
+        "误拒 5 → 2，编码 20/20 → 20/20"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "可逆设计",
+      "items": [
+        "只用官方扩展 API，不动 dist",
+        "settings 先备份为 .pipurge.bak",
+        "revert 逐字节还原"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "够不到的地方",
+      "items": [
+        "服务端对齐",
+        "其它扩展的 tool_call 拦截",
+        "多轮智能体场景"
+      ]
+    }
+  ]
+}

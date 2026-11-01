@@ -51,6 +51,15 @@ pi install git:github.com/Finn763/pi-purge-adv
 
 ---
 
+## 运行环
+
+![pi-purge-adv 架构](docs/architecture.zh-CN.svg)
+
+一句提问进来，四层宿主被替换，一句请求出去。虚线是 `payload` 模式对出网 system 的擦洗；下方那条是追加在人格末尾的防泄漏附则。
+[▶ 交互版](docs/architecture.zh-CN.html)
+
+---
+
 ## 实测
 
 主测 `deepseek/deepseek-flash`（DeepSeek V4.1 Flash）。题库 HarmBench / StrongREJECT / Safety-Prompts / JBB，判官 `deepseek-v4-flash`（rubric），两臂同题配对：

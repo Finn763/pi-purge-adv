@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "37e1440a-7dd7-4c40-b38e-8c12fc05e57c",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "D:\\code\\pi-purge-adv\\.archify\\architecture-pi-purge-20261101-144500\\candidate-zh.json",
+  "output": "D:\\code\\pi-purge-adv\\.archify\\architecture-pi-purge-20261101-144500\\architecture.zh-CN.html",
+  "specification": {
+    "sha256": "095385e27faa5a4c4af6747fcb42897b3e508af0d741bdd4c210dbdbc1f6b4eb",
+    "bytes": 2787
+  },
+  "artifact": {
+    "sha256": "6486ca8661ac0e57647a7a6f006fdcaca5c292e290f1ff0bcf7d11a2df87b709",
+    "bytes": 752090
+  }
+}
