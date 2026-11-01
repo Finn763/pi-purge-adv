@@ -1,5 +1,5 @@
 {
-  "name": "pi-purge",
+  "name": "pi-purge-adv",
   "version": "0.2.0",
   "description": "pi 破甲：拆掉 pi coding agent 的宿主层提示词、信任门与压缩层，按会话注入自定义人格",
   "type": "module",
@@ -24,7 +24,7 @@
     "./extension": "./src/index.js"
   },
   "bin": {
-    "pi-purge": "bin/pi-purge.js"
+    "pi-purge-adv": "bin/pi-purge-adv.js"
   },
   "files": [
     "src",
@@ -35,8 +35,8 @@
   ],
   "scripts": {
     "test": "node --test test/prompt.test.mjs test/extension.test.mjs test/core.test.mjs test/config.test.mjs test/retry.test.mjs",
-    "status": "node bin/pi-purge.js status",
-    "apply": "node bin/pi-purge.js apply"
+    "status": "node bin/pi-purge-adv.js status",
+    "apply": "node bin/pi-purge-adv.js apply"
   },
   "peerDependencies": {
     "@earendil-works/pi-ai": "*",
@@ -48,10 +48,10 @@
   "author": "Finn763",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Finn763/pi-purge.git"
+    "url": "git+https://github.com/Finn763/pi-purge-adv.git"
   },
-  "homepage": "https://github.com/Finn763/pi-purge#readme",
+  "homepage": "https://github.com/Finn763/pi-purge-adv#readme",
   "bugs": {
-    "url": "https://github.com/Finn763/pi-purge/issues"
+    "url": "https://github.com/Finn763/pi-purge-adv/issues"
   }
 }

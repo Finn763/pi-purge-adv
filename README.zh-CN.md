@@ -1,11 +1,11 @@
 <div align="center">
 
-# pi-purge
+# pi-purge-adv
 
 *把宿主层拆掉。剩下的，交还给模型。*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-3fb950?style=flat-square&labelColor=black)](LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/Finn763/pi-purge?style=flat-square&logo=github&labelColor=black)](https://github.com/Finn763/pi-purge/stargazers)
+[![GitHub stars](https://img.shields.io/github/stars/Finn763/pi-purge-adv?style=flat-square&logo=github&labelColor=black)](https://github.com/Finn763/pi-purge-adv/stargazers)
 [![tests](https://img.shields.io/badge/tests-54%2F54-3fb950?style=flat-square&labelColor=black)](#验证)
 [![pi](https://img.shields.io/badge/pi--package-extension-8957e5?style=flat-square&labelColor=black)](package.json)
 
@@ -13,19 +13,19 @@
 
 </div>
 
-> 大多数"破甲"只换一段提示词。pi-purge 先把宿主拆干净——因为很多时候拦你的不是模型，是宿主。
+> 大多数"破甲"只换一段提示词。pi-purge-adv 先把宿主拆干净——因为很多时候拦你的不是模型，是宿主。
 
-[pi coding agent](https://github.com/earendil-works/pi) 在你这个问题交给模型之前，会自己叠四层：人格 preamble、内置 tools/rules/docs 三段、项目信任门、上下文压缩。pi-purge 是装在 pi 上的扩展，用 pi 自己的扩展 API 把这四层逐个换成你的——不改模型、不动 `dist/`、一条命令退回原样。
+[pi coding agent](https://github.com/earendil-works/pi) 在你这个问题交给模型之前，会自己叠四层：人格 preamble、内置 tools/rules/docs 三段、项目信任门、上下文压缩。pi-purge-adv 是装在 pi 上的扩展，用 pi 自己的扩展 API 把这四层逐个换成你的——不改模型、不动 `dist/`、一条命令退回原样。
 
 ```bash
-pi install git:github.com/Finn763/pi-purge
+pi install git:github.com/Finn763/pi-purge-adv
 ```
 
-走 git 源，不需要发 npm。`pi` 会克隆到 `<agent-dir>/git/github.com/Finn763/pi-purge`，写进 `settings.packages`，就地加载。要固定版本就带 ref：`pi install git:github.com/Finn763/pi-purge@main`。
+走 git 源，不需要发 npm。`pi` 会克隆到 `<agent-dir>/git/github.com/Finn763/pi-purge-adv`，写进 `settings.packages`，就地加载。要固定版本就带 ref：`pi install git:github.com/Finn763/pi-purge-adv@main`。
 
 ---
 
-## 为什么做 pi-purge
+## 为什么做 pi-purge-adv
 
 为修三个做评测一定会撞上的毛病：
 
@@ -39,7 +39,7 @@ pi install git:github.com/Finn763/pi-purge
 
 宿主会加戏的地方就这四层，其余（审批弹窗、文件沙箱、工具结果裁剪）**pi 本身没有**，无需处理：
 
-| 宿主铠甲 | 在 pi 里的位置 | pi-purge 怎么动 |
+| 宿主铠甲 | 在 pi 里的位置 | pi-purge-adv 怎么动 |
 |---|---|---|
 | 人格 preamble | `dist/core/system-prompt.js` | 替换（`section` / `force`） |
 | 内置 tools / rules / docs | 同一文件，给了 `customPrompt` 就整体消失 | 重建前两段，docs 不生成 |
@@ -72,7 +72,7 @@ pi install git:github.com/Finn763/pi-purge
 
 ## 四种模式
 
-`<agent-dir>/pi-purge/config.json` 里的 `mode`：
+`<agent-dir>/pi-purge-adv/config.json` 里的 `mode`：
 
 | 模式 | 行为 | 适用 |
 |---|---|---|
@@ -92,13 +92,13 @@ pi install git:github.com/Finn763/pi-purge
 
 | 方式 | 命令 | 说明 |
 |---|---|---|
-| **公开源（推荐）** | `pi install git:github.com/Finn763/pi-purge` | 克隆到 `<agent-dir>/git/...`，写进 `settings.packages`，就地加载 |
-| 只试一次 | `pi -e git:github.com/Finn763/pi-purge --print "你好"` | 不进 settings，进程退出即散 |
-| 本地检出 | `pi install ./pi-purge` | 和公开源一样，只是指向你自己的工作树 |
-| 自带 CLI（顺手打补丁） | `node bin/pi-purge.js apply` | 额外打 3 项 settings 补丁 + 建运行时目录 + 留 `.pipurge.bak` |
-| 复制式 | `node bin/pi-purge.js apply --copy` | 装进 `<agent-dir>/extensions/pi-purge/`，仓库可随时删 |
+| **公开源（推荐）** | `pi install git:github.com/Finn763/pi-purge-adv` | 克隆到 `<agent-dir>/git/...`，写进 `settings.packages`，就地加载 |
+| 只试一次 | `pi -e git:github.com/Finn763/pi-purge-adv --print "你好"` | 不进 settings，进程退出即散 |
+| 本地检出 | `pi install ./pi-purge-adv` | 和公开源一样，只是指向你自己的工作树 |
+| 自带 CLI（顺手打补丁） | `node bin/pi-purge-adv.js apply` | 额外打 3 项 settings 补丁 + 建运行时目录 + 留 `.pipurge.bak` |
+| 复制式 | `node bin/pi-purge-adv.js apply --copy` | 装进 `<agent-dir>/extensions/pi-purge-adv/`，仓库可随时删 |
 
-早先段落里的 `D:\code\pi-purge` 只是作者的工作目录，换成你自己的路径，或者直接用上面的 git 源。
+早先段落里的 `D:\code\pi-purge-adv` 只是作者的工作目录，换成你自己的路径，或者直接用上面的 git 源。
 
 装完新开一个 pi 会话（或 `/reload`）。会话内 `/purge` 看状态、`/purge mode force` 切模式、`/purge edit` 打路径。
 
@@ -137,7 +137,7 @@ src/config.js          运行时配置与注入文本读写（容忍 BOM）
 src/settings.js        settings.json 三项补丁
 src/core.js            包注册 / 复制安装 / 回滚 / 状态 / doctor
 src/paths.js           路径解析（跟随 PI_CODING_AGENT_DIR）
-bin/pi-purge.js        CLI：status/apply/mode/revert/doctor/uninstall/path
+bin/pi-purge-adv.js        CLI：status/apply/mode/revert/doctor/uninstall/path
 prompts/sandbox-release.md   英文沙箱执行体 + 防泄漏加固版
 scripts/fetch-banks.mjs      拉公开题库（raw.githubusercontent / HF）
 scripts/build-banks.mjs      切成四组 bank
@@ -158,9 +158,9 @@ docs/FINAL-REPORT.md         结案报告
 
 ```powershell
 npm test                                        # 54/54
-node bin/pi-purge.js status                     # 安装与补丁状态
-node bin/pi-purge.js doctor                     # 9 项自检
-pi -e git:github.com/Finn763/pi-purge --print "回复：OK"      # 确认扩展被 pi 调用
+node bin/pi-purge-adv.js status                     # 安装与补丁状态
+node bin/pi-purge-adv.js doctor                     # 9 项自检
+pi -e git:github.com/Finn763/pi-purge-adv --print "回复：OK"      # 确认扩展被 pi 调用
 ```
 
 ## 协议

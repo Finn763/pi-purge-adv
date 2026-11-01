@@ -1,10 +1,10 @@
 /**
- * pi-purge 引擎：注册 pi 包 / 复制式安装、settings 补丁、状态、回滚。
+ * pi-purge-adv 引擎：注册 pi 包 / 复制式安装、settings 补丁、状态、回滚。
  *
  * 两种装法，都走 pi 自己的约定：
  *   package（默认）—— 把本包根目录写进 settings.packages。pi 认本地路径包，就地加载、
  *                     不复制；包更新（改代码）下次启动即生效。
- *   copy（--copy） —— 把 src 下的扩展文件拷进 <agent-dir>/extensions/pi-purge/。
+ *   copy（--copy） —— 把 src 下的扩展文件拷进 <agent-dir>/extensions/pi-purge-adv/。
  *                     适合仓库会被挪走/删掉的场景。
  *
  * 任何写操作都可逆：settings 先备份，包条目可摘，扩展目录整份删除即还原。
@@ -26,7 +26,7 @@ import {
 import { ensureRuntime, readConfig, readInject } from "./config.js";
 import { applyPatches, patchStates, revertPatches } from "./settings.js";
 
-/** copy 模式下需要搬进 extensions/pi-purge/ 的运行时文件（index.js 用同名相对导入）。 */
+/** copy 模式下需要搬进 extensions/pi-purge-adv/ 的运行时文件（index.js 用同名相对导入）。 */
 const COPY_FILES = ["index.js", "paths.js", "config.js", "prompt.js"];
 
 function readJson(file) {
@@ -116,11 +116,11 @@ export function installCopy(env = process.env) {
   }
   const pkgFile = path.join(destRoot, "package.json");
   const pkgBody = {
-    name: "pi-purge",
+    name: "pi-purge-adv",
     version: readOwnManifest().version,
     private: true,
     type: "module",
-    description: "pi 破甲扩展（pi-purge apply --copy 安装，删掉本目录即还原）",
+    description: "pi 破甲扩展（pi-purge-adv apply --copy 安装，删掉本目录即还原）",
   };
   const next = JSON.stringify(pkgBody, null, 2) + "\n";
   const current = fs.existsSync(pkgFile) ? fs.readFileSync(pkgFile, "utf8") : "";

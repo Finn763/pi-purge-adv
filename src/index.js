@@ -1,5 +1,5 @@
 /**
- * pi-purge 破甲扩展本体。
+ * pi-purge-adv 破甲扩展本体。
  *
  * 生效位置全部在宿主层，不碰模型、不碰工具实现：
  *   before_agent_start      → 换 preamble / 重建 tools+rules / 接追加规则（section 模式）
@@ -11,7 +11,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { configPath, injectPath, logPath } from "./paths.js";
+import { configPath, envVar, injectPath, logPath } from "./paths.js";
 import { readConfig, readInject, writeConfig, stripBom, MODES } from "./config.js";
 import {
   applySectionMode,
@@ -32,7 +32,7 @@ const state = {
 };
 
 /**
- * 拒答重试状态。默认关（PI_PURGE_RETRY=1 才开），评测与日常都先跑不重试的口径。
+ * 拒答重试状态。默认关（PI_PURGE_ADV_RETRY=1 才开），评测与日常都先跑不重试的口径。
  * attempts = 本轮已经发生的回答次数（首发算 1）。
  */
 const retryState = {
@@ -41,8 +41,8 @@ const retryState = {
 };
 
 function retryConfig() {
-  const enabled = process.env.PI_PURGE_RETRY === "1";
-  const max = Number.parseInt(process.env.PI_PURGE_RETRY_MAX ?? "", 10);
+  const enabled = envVar("RETRY") === "1";
+  const max = Number.parseInt(envVar("RETRY_MAX") || "", 10);
   return { enabled, maxAttempts: Number.isFinite(max) && max > 0 ? max : 2 };
 }
 
@@ -74,12 +74,12 @@ function statStamp(file) {
 }
 
 /**
- * 评测专用的注入文件覆盖（脚本 eval-bank.mjs 会设 PI_PURGE_INJECT）。
+ * 评测专用的注入文件覆盖（脚本 eval-bank.mjs 会设 PI_PURGE_ADV_INJECT）。
  * 路径相对 cwd 解析；文件不存在时不生效（回落到运行时目录的 prompt-inject.md），
  * 避免父进程泄漏的环境变量把正常测试/会话的注入文本顶掉。
  */
 function evalInjectFile() {
-  const raw = process.env.PI_PURGE_INJECT;
+  const raw = envVar("INJECT");
   if (!raw) return "";
   const resolved = path.isAbsolute(raw) ? raw : path.resolve(process.cwd(), raw);
   return fs.existsSync(resolved) ? resolved : "";
@@ -87,12 +87,12 @@ function evalInjectFile() {
 
 function refresh() {
   const injectFile = evalInjectFile() || injectPath();
-  const stamp = `${statStamp(configPath())}|${statStamp(injectFile)}|${process.env.PI_PURGE_MODE || ""}`;
+  const stamp = `${statStamp(configPath())}|${statStamp(injectFile)}|${envVar("MODE") || ""}`;
   if (stamp === state.stamp && state.config) return state;
   const { config, error } = readConfig();
   // 评测时用环境变量临时压过配置，不写用户的 config.json
-  if (process.env.PI_PURGE_MODE && MODES.includes(process.env.PI_PURGE_MODE)) {
-    config.mode = process.env.PI_PURGE_MODE;
+  if (envVar("MODE") && MODES.includes(envVar("MODE"))) {
+    config.mode = envVar("MODE");
   }
   let rawInject = "";
   try {
@@ -194,8 +194,8 @@ export default function piPurge(pi) {
       let touched = false;
 
       // assistant 预填（"续写"型越狱）：与 mode 无关，用来对比"用户消息包装"这类手法。
-      // PI_PURGE_PREFILL_FILE 指向一段文本，会作为 assistant 消息追加到出网载荷末尾。
-      const prefillFile = process.env.PI_PURGE_PREFILL_FILE;
+      // PI_PURGE_ADV_PREFILL_FILE 指向一段文本，会作为 assistant 消息追加到出网载荷末尾。
+      const prefillFile = envVar("PREFILL_FILE");
       if (prefillFile && payload && Array.isArray(payload.messages)) {
         try {
           const prefill = fs.readFileSync(prefillFile, "utf8").trim();
@@ -223,7 +223,7 @@ export default function piPurge(pi) {
     }
   });
 
-  // 响应侧：认出拒答就换措辞重问一次（默认关，PI_PURGE_RETRY=1 开）。
+  // 响应侧：认出拒答就换措辞重问一次（默认关，PI_PURGE_ADV_RETRY=1 开）。
   pi.on("turn_end", (event) => {
     try {
       const { config } = refresh();
@@ -255,7 +255,7 @@ export default function piPurge(pi) {
         entries: [
           {
             type: "custom_message",
-            customType: "pi-purge-retry",
+            customType: "pi-purge-adv-retry",
             content: decision.prompt,
             display: true,
           },
@@ -270,7 +270,7 @@ export default function piPurge(pi) {
   });
 
   pi.registerCommand("purge", {
-    description: "pi-purge：查看破甲状态 / 切换模式 / 打开注入文件",
+    description: "pi-purge-adv：查看破甲状态 / 切换模式 / 打开注入文件",
     handler: async (args, ctx) => {
       const { config, persona, tail, error } = refresh();
       const argv = String(args ?? "").trim().split(/\s+/).filter(Boolean);
@@ -286,7 +286,7 @@ export default function piPurge(pi) {
       if (sub === "status") {
         notify(
           [
-            `pi-purge ${config.mode} · persona ${persona.length}B · tail ${tail.length}B`,
+            `pi-purge-adv ${config.mode} · persona ${persona.length}B · tail ${tail.length}B`,
             `config: ${configPath()}`,
             `inject: ${injectPath()}`,
             error ? `配置解析失败，已回落默认值: ${error}` : "",
@@ -306,7 +306,7 @@ export default function piPurge(pi) {
         writeConfig({ ...config, mode: want });
         refresh();
         state.stamp = "";
-        notify(`pi-purge 模式 → ${want}`, "info");
+        notify(`pi-purge-adv 模式 → ${want}`, "info");
         return;
       }
 

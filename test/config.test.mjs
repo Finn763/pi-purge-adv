@@ -6,9 +6,9 @@ import path from "node:path";
 import { DEFAULT_CONFIG, normalizeConfig, readConfig, readInject, ensureRuntime, stripBom } from "../src/config.js";
 
 function sandbox() {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "pi-purge-cfg-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "pi-purge-adv-cfg-"));
   process.env.PI_CODING_AGENT_DIR = path.join(root, "agent");
-  process.env.PI_PURGE_DIR = path.join(process.env.PI_CODING_AGENT_DIR, "pi-purge");
+  process.env.PI_PURGE_DIR = path.join(process.env.PI_CODING_AGENT_DIR, "pi-purge-adv");
   fs.mkdirSync(process.env.PI_PURGE_DIR, { recursive: true });
   return process.env.PI_PURGE_DIR;
 }

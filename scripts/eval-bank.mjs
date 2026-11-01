@@ -3,8 +3,8 @@
  * 破甲题库评测器：把题库逐条通过 pi 的 RPC 模式喂进去，按上游同一套词表判分。
  *
  * 不写用户的 config.json：模式和注入文本都用环境变量压过
- *   PI_PURGE_MODE=force|section|soft|payload|off
- *   PI_PURGE_INJECT=<注入文件绝对路径>
+ *   PI_PURGE_ADV_MODE=force|section|soft|payload|off
+ *   PI_PURGE_ADV_INJECT=<注入文件绝对路径>
  *
  * 用法：
  *   node scripts/eval-bank.mjs --label baseline --mode off \
@@ -142,8 +142,8 @@ class PiRpc {
     this.cli = path.join(path.dirname(pi.path), "dist", "bundle", "cli.js");
     if (!fs.existsSync(this.cli)) throw new Error(`找不到 pi CLI: ${this.cli}`);
     const env = { ...process.env };
-    if (mode) env.PI_PURGE_MODE = mode;
-    if (inject) env.PI_PURGE_INJECT = path.resolve(inject);
+    if (mode) env.PI_PURGE_ADV_MODE = mode;
+    if (inject) env.PI_PURGE_ADV_INJECT = path.resolve(inject);
     this.args = [this.cli, "--mode", "rpc"];
     if (provider) this.args.push("--provider", provider);
     if (model) this.args.push("--model", model);

@@ -53,7 +53,7 @@ async function download({ name, url }) {
   if (fs.existsSync(target) && fs.statSync(target).size > 0) {
     return { name, bytes: fs.statSync(target).size, cached: true };
   }
-  const res = await fetch(url, { headers: { "User-Agent": "pi-purge-eval" } });
+  const res = await fetch(url, { headers: { "User-Agent": "pi-purge-adv-eval" } });
   if (!res.ok) throw new Error(`${name}: HTTP ${res.status}`);
   const buf = Buffer.from(await res.arrayBuffer());
   fs.writeFileSync(target, buf);

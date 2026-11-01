@@ -1,4 +1,4 @@
-# pi-purge 结案报告
+# pi-purge-adv 结案报告
 
 - 周期：2026-10-31 ～ 2026-11-01
 - 宿主：pi 1.4.0（`@earendil-works/pi-coding-agent`）
@@ -12,7 +12,7 @@
 
 装在 pi 上的破甲扩展。它不碰模型，只拆宿主加在模型外面的那层：
 
-| 宿主铠甲 | pi 里有吗 | pi-purge 怎么处理 |
+| 宿主铠甲 | pi 里有吗 | pi-purge-adv 怎么处理 |
 |---|---|---|
 | 人格 preamble | 有 | 替换（section / force） |
 | tools / rules / docs 三段 | 有 | 重建前两段，docs 不生成 |
@@ -121,4 +121,4 @@ docs/           本报告 + 5 份分项报告
 
 1. **装上就别管了**：它让 pi 不再往系统提示词里加戏，也不会把你的配置抖出去。
 2. **别指望它让模型开口**：模型不肯给的，本地怎么折腾都只是小幅。
-3. **要退回**：`node bin/pi-purge.js revert`，settings 逐字节还原。
+3. **要退回**：`node bin/pi-purge-adv.js revert`，settings 逐字节还原。

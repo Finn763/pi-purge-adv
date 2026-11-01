@@ -177,7 +177,7 @@ pi.on("turn_end", (event) => {
       entries: [
         {
           type: "custom_message",
-          customType: "pi-purge-retry",
+          customType: "pi-purge-adv-retry",
           content: decision.prompt,
           display: true,
         },

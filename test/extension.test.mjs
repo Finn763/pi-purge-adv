@@ -10,9 +10,9 @@ import path from "node:path";
  */
 
 function tmpEnv() {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "pi-purge-ext-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "pi-purge-adv-ext-"));
   const agent = path.join(root, "agent");
-  const purge = path.join(agent, "pi-purge");
+  const purge = path.join(agent, "pi-purge-adv");
   fs.mkdirSync(purge, { recursive: true });
   process.env.PI_CODING_AGENT_DIR = agent;
   process.env.PI_PURGE_DIR = purge;

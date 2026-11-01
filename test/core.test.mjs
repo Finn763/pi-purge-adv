@@ -18,12 +18,12 @@ const ORIGINAL = JSON.stringify(
 ) + "\n";
 
 function sandbox() {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "pi-purge-core-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "pi-purge-adv-core-"));
   const agent = path.join(root, "agent");
   fs.mkdirSync(agent, { recursive: true });
   fs.writeFileSync(path.join(agent, "settings.json"), ORIGINAL, "utf8");
   process.env.PI_CODING_AGENT_DIR = agent;
-  process.env.PI_PURGE_DIR = path.join(agent, "pi-purge");
+  process.env.PI_PURGE_DIR = path.join(agent, "pi-purge-adv");
   return { root, agent };
 }
 
@@ -46,8 +46,8 @@ test("apply 按包规范注册：写进 settings.packages，不复制文件", ()
 
   assert.equal(fs.readFileSync(settingsBackupPath(process.env), "utf8"), ORIGINAL);
   assert.equal(copyInstalled(process.env), false, "package 模式不该复制扩展");
-  assert.ok(fs.existsSync(path.join(agent, "pi-purge", "config.json")));
-  assert.ok(fs.existsSync(path.join(agent, "pi-purge", "prompt-inject.md")));
+  assert.ok(fs.existsSync(path.join(agent, "pi-purge-adv", "config.json")));
+  assert.ok(fs.existsSync(path.join(agent, "pi-purge-adv", "prompt-inject.md")));
 });
 
 test("apply 保留 settings.packages 里原有的条目", () => {
@@ -112,7 +112,7 @@ test("没有备份时 revert 走逐条撤回 + 摘包条目", () => {
   assert.deepEqual(after.compaction, { reserveTokens: 16384 });
 });
 
-test("--copy 模式把扩展拷进 extensions/pi-purge", () => {
+test("--copy 模式把扩展拷进 extensions/pi-purge-adv", () => {
   const { agent } = sandbox();
   const report = apply(process.env, { copy: true });
 
@@ -162,7 +162,7 @@ test("uninstall 连运行时目录一起清掉", () => {
   const { agent } = sandbox();
   apply(process.env);
   uninstall(process.env);
-  assert.equal(fs.existsSync(path.join(agent, "pi-purge")), false);
+  assert.equal(fs.existsSync(path.join(agent, "pi-purge-adv")), false);
   assert.equal(fs.readFileSync(path.join(agent, "settings.json"), "utf8"), ORIGINAL);
 });
 
@@ -174,9 +174,9 @@ test("settings.json 坏掉时 apply 报错且不写文件", () => {
 });
 
 test("settings.json 不存在时也能装（新建文件）", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "pi-purge-nosettings-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "pi-purge-adv-nosettings-"));
   process.env.PI_CODING_AGENT_DIR = root;
-  process.env.PI_PURGE_DIR = path.join(root, "pi-purge");
+  process.env.PI_PURGE_DIR = path.join(root, "pi-purge-adv");
   apply(process.env);
   const patched = JSON.parse(fs.readFileSync(path.join(root, "settings.json"), "utf8"));
   assert.deepEqual(patched.packages, [REPO_ROOT]);

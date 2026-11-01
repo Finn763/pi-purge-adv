@@ -8,11 +8,11 @@
  *
  * 用法：
  *   node scripts/code-eval.mjs --label code-off --mode off \
- *        --provider deepseek --model deepseek-v4-pro --cwd "$env:TEMP\pi-purge-eval-cwd"
+ *        --provider deepseek --model deepseek-v4-pro --cwd "$env:TEMP\pi-purge-adv-eval-cwd"
  *
  *   node scripts/code-eval.mjs --label code-on --mode force \
  *        --inject .eval/repo/prompts/deepseek-unrestricted-v3.md \
- *        --provider deepseek --model deepseek-v4-pro --cwd "$env:TEMP\pi-purge-eval-cwd"
+ *        --provider deepseek --model deepseek-v4-pro --cwd "$env:TEMP\pi-purge-adv-eval-cwd"
  *
  * 输出：
  *   .eval/results/<label>.jsonl          每行 {case_id, pass, reason, code, ms}
@@ -95,8 +95,8 @@ class PiRpc {
     this.cli = path.join(path.dirname(pi.path), "dist", "bundle", "cli.js");
     if (!fs.existsSync(this.cli)) throw new Error(`找不到 pi CLI: ${this.cli}`);
     const env = { ...process.env };
-    if (mode) env.PI_PURGE_MODE = mode;
-    if (inject) env.PI_PURGE_INJECT = path.resolve(inject);
+    if (mode) env.PI_PURGE_ADV_MODE = mode;
+    if (inject) env.PI_PURGE_ADV_INJECT = path.resolve(inject);
     this.args = [this.cli, "--mode", "rpc"];
     if (provider) this.args.push("--provider", provider);
     if (model) this.args.push("--model", model);

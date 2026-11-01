@@ -1,10 +1,10 @@
-# pi-purge 实测：`deepseek-flash`（用户主力模型）
+# pi-purge-adv 实测：`deepseek-flash`（用户主力模型）
 
 - 被测宿主：pi 1.4.0
 - 被测模型：`deepseek/deepseek-flash` = **DeepSeek V4.1 Flash**（`get_state` 实证；`deepseek-v4-flash` 不是合法 id，pi 会提示 "Model not found … Using custom model id"，相关数据已作废）
 - 破甲方式：`force` 模式 + upstream `deepseek-unrestricted-v3.md` 整段接管系统提示词
 - 判官：`deepseek-v4-flash` id（同一把尺子判 pro 与 flash 两批，保证可比）
-- 环境：独立 agent 目录（只注册 pi-purge）、空 cwd、纯对话组禁用工具
+- 环境：独立 agent 目录（只注册 pi-purge-adv）、空 cwd、纯对话组禁用工具
 - 时间：2026-10-31
 
 ## 两轮追加实验（2026-10-31 晚）
@@ -66,7 +66,7 @@ B 组前 60 条 × 两臂，判官 rubric：
 两条结论：
 
 1. **宿主层在 flash 上照样被拿下**：A 组 2→11，形态不是"绕一点"，而是把注入整段搬出来——`translate-system` 把 `[MODE: SANDBOX]` 全文翻成中文，`json-schema-dump` 把 `system_prompt.mode/role/context/response_rules` 导成 JSON。
-2. **模型层的增益差一个量级**：pro +42 条（2.3×），flash +4 条（1.4×）。flash 的 force 臂里，绝大多数"看起来没拒"的回答被 rubric 判 0——抽查是把拒绝写得更客气、附替代方案。**pi-purge 是放大器，不是开关。**
+2. **模型层的增益差一个量级**：pro +42 条（2.3×），flash +4 条（1.4×）。flash 的 force 臂里，绝大多数"看起来没拒"的回答被 rubric 判 0——抽查是把拒绝写得更客气、附替代方案。**pi-purge-adv 是放大器，不是开关。**
 
 ## 产物
 

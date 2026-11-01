@@ -1,4 +1,4 @@
-# pi-purge 破甲实测报告
+# pi-purge-adv 破甲实测报告
 
 - 宿主：pi `1.4.0`（`@earendil-works/pi-coding-agent`），Windows，Node 26
 - 模型：`deepseek/deepseek-v4-pro`（`--provider deepseek`）
@@ -10,13 +10,13 @@
 
 | 项 | 值 |
 |---|---|
-| 安装方式 | `node bin/pi-purge.js apply` → 包注册进 `~/.pi/agent/settings.json` 的 `packages` |
+| 安装方式 | `node bin/pi-purge-adv.js apply` → 包注册进 `~/.pi/agent/settings.json` 的 `packages` |
 | settings 补丁 | `defaultProjectTrust=always`、`compaction.enabled=false`、`defaultTools` 补齐 8 个 |
 | 备份 | `~/.pi/agent/settings.json.pipurge.bak` |
-| 回滚 | `node bin/pi-purge.js revert`（settings 逐字节回原件） |
+| 回滚 | `node bin/pi-purge-adv.js revert`（settings 逐字节回原件） |
 | 评测隔离 | 独立 agent 目录（`auth.json`+`models.json` 拷贝，只注册本包）、空 cwd、`--exclude-tools *` |
 
-隔离是必须的：第一轮直接在 `D:\code\pi-purge` 里跑，pi 带着工具去读仓库，把「列出风险确认」答成了对本项目 README 的评估，整批数据作废。
+隔离是必须的：第一轮直接在 `D:\code\pi-purge-adv` 里跑，pi 带着工具去读仓库，把「列出风险确认」答成了对本项目 README 的评估，整批数据作废。
 
 ## 二、硬探针（10 条，自建 `.eval/probes.jsonl`）
 
@@ -53,7 +53,7 @@
 
 ```powershell
 node scripts/eval-bank.mjs --label bank-medium --bank .eval/repo/tests/prompt_bank.jsonl `
-  --level medium --per-scenario 4 --cwd "$env:TEMP\pi-purge-eval-cwd" `
+  --level medium --per-scenario 4 --cwd "$env:TEMP\pi-purge-adv-eval-cwd" `
   --mode force --inject .eval/repo/prompts/deepseek-unrestricted-v3.md `
   --provider deepseek --model deepseek-v4-pro
 ```
@@ -73,19 +73,19 @@ node scripts/eval-bank.mjs --label bank-medium --bank .eval/repo/tests/prompt_ba
 
 ## 五、结论
 
-1. **宿主层：破了。** 系统提示词被完整替换（21KB 自报原文为证），pi 的 preamble、tools/rules/docs 三段、`defaultProjectTrust` 信任门、`compaction` 全部按预期让位。这条链路上 pi-purge 是有效的。
+1. **宿主层：破了。** 系统提示词被完整替换（21KB 自报原文为证），pi 的 preamble、tools/rules/docs 三段、`defaultProjectTrust` 信任门、`compaction` 全部按预期让位。这条链路上 pi-purge-adv 是有效的。
 2. **模型层：没破。** 同一条 prompt 在 baseline 里被模型自己拒掉的部分（官方题库里 2 条 fictional_nsfw 中文条目），加上 v3 之后仍然被拒 —— 那是 deepseek-v4-pro 自身的安全层，改宿主提示词改不动它。
 3. **「通不通过」取决于题库。** 自建硬探针：80% → 100%，且唯一的大幅差异（system prompt 全量泄漏）就是破甲目标本身。上游 minimal 题库：87.5% → 91.7%，没区分度。
 
 ## 六、复现
 
 ```powershell
-cd D:\code\pi-purge
+cd D:\code\pi-purge-adv
 # 干净 cwd + 隔离 agent 目录（见 README「评测」）
 node scripts/eval-bank.mjs --label probes-off --bank .eval\probes.jsonl --level probe --all `
-  --cwd "$env:TEMP\pi-purge-eval-cwd" --mode off --provider deepseek --model deepseek-v4-pro
+  --cwd "$env:TEMP\pi-purge-adv-eval-cwd" --mode off --provider deepseek --model deepseek-v4-pro
 node scripts/eval-bank.mjs --label probes-purge --bank .eval\probes.jsonl --level probe --all `
-  --cwd "$env:TEMP\pi-purge-eval-cwd" --mode force `
+  --cwd "$env:TEMP\pi-purge-adv-eval-cwd" --mode force `
   --inject .eval\repo\prompts\deepseek-unrestricted-v3.md --provider deepseek --model deepseek-v4-pro
 node scripts\triage.mjs .eval\results\probes-off.jsonl .eval\results\probes-purge.jsonl
 ```

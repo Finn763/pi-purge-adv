@@ -1,11 +1,11 @@
 <div align="center">
 
-# pi-purge
+# pi-purge-adv
 
 *Strip the harness. Give the turn back to the model.*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-3fb950?style=flat-square&labelColor=black)](LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/Finn763/pi-purge?style=flat-square&logo=github&labelColor=black)](https://github.com/Finn763/pi-purge/stargazers)
+[![GitHub stars](https://img.shields.io/github/stars/Finn763/pi-purge-adv?style=flat-square&logo=github&labelColor=black)](https://github.com/Finn763/pi-purge-adv/stargazers)
 [![tests](https://img.shields.io/badge/tests-54%2F54-3fb950?style=flat-square&labelColor=black)](#verification)
 [![pi](https://img.shields.io/badge/pi--package-extension-8957e5?style=flat-square&labelColor=black)](package.json)
 
@@ -13,19 +13,19 @@
 
 </div>
 
-> Most "jailbreaks" swap a prompt. pi-purge strips the harness first — because often the thing refusing you isn't the model, it's the harness.
+> Most "jailbreaks" swap a prompt. pi-purge-adv strips the harness first — because often the thing refusing you isn't the model, it's the harness.
 
-[pi coding agent](https://github.com/earendil-works/pi) stacks four layers on top of the model before your question ever leaves the box: a persona preamble, the built-in tools/rules/docs sections, a project-trust gate, and context compaction. pi-purge is an extension that replaces each of them with yours, using pi's own extension API — no model patching, no `dist/` surgery, one command to revert.
+[pi coding agent](https://github.com/earendil-works/pi) stacks four layers on top of the model before your question ever leaves the box: a persona preamble, the built-in tools/rules/docs sections, a project-trust gate, and context compaction. pi-purge-adv is an extension that replaces each of them with yours, using pi's own extension API — no model patching, no `dist/` surgery, one command to revert.
 
 ```bash
-pi install git:github.com/Finn763/pi-purge
+pi install git:github.com/Finn763/pi-purge-adv
 ```
 
-Clone-based install — no npm publish needed. `pi` clones into `<agent-dir>/git/github.com/Finn763/pi-purge`, registers it in `settings.packages`, and loads it in place. Pin a revision with `@main` or a tag: `pi install git:github.com/Finn763/pi-purge@main`.
+Clone-based install — no npm publish needed. `pi` clones into `<agent-dir>/git/github.com/Finn763/pi-purge-adv`, registers it in `settings.packages`, and loads it in place. Pin a revision with `@main` or a tag: `pi install git:github.com/Finn763/pi-purge-adv@main`.
 
 ---
 
-## Why pi-purge exists
+## Why pi-purge-adv exists
 
 Built to kill three things that show up in every jailbreak evaluation:
 
@@ -39,7 +39,7 @@ Built to kill three things that show up in every jailbreak evaluation:
 
 There are exactly four places pi adds its own play. The rest (approval prompts, file sandbox, tool-result pruning) **don't exist in pi** — nothing to strip:
 
-| Harness layer | Where it lives | What pi-purge does |
+| Harness layer | Where it lives | What pi-purge-adv does |
 |---|---|---|
 | Persona preamble | `dist/core/system-prompt.js` | Replaced (`section` / `force`) |
 | Built-in tools / rules / docs | Same file — supplying `customPrompt` drops all three | Rebuilds the first two, docs not regenerated |
@@ -72,7 +72,7 @@ Three follow-up experiments, all falsified and documented rather than quietly dr
 
 ## Modes
 
-`mode` in `<agent-dir>/pi-purge/config.json`:
+`mode` in `<agent-dir>/pi-purge-adv/config.json`:
 
 | Mode | Behavior | When |
 |---|---|---|
@@ -92,13 +92,13 @@ Anyone can install from the public repo — no npm publish, no local path:
 
 | Path | Command | What happens |
 |---|---|---|
-| **Public (recommended)** | `pi install git:github.com/Finn763/pi-purge` | clones into `<agent-dir>/git/...`, writes `settings.packages`, loads in place |
-| Try once | `pi -e git:github.com/Finn763/pi-purge --print "hello"` | never touches settings |
-| From a checkout | `pi install ./pi-purge` | same as public route, but against your working tree |
-| CLI (patches settings too) | `node bin/pi-purge.js apply` | adds the 3 settings patches, creates the runtime dir, keeps a `.pipurge.bak` |
-| Copy mode | `node bin/pi-purge.js apply --copy` | installs into `<agent-dir>/extensions/pi-purge/`, so the checkout can be deleted |
+| **Public (recommended)** | `pi install git:github.com/Finn763/pi-purge-adv` | clones into `<agent-dir>/git/...`, writes `settings.packages`, loads in place |
+| Try once | `pi -e git:github.com/Finn763/pi-purge-adv --print "hello"` | never touches settings |
+| From a checkout | `pi install ./pi-purge-adv` | same as public route, but against your working tree |
+| CLI (patches settings too) | `node bin/pi-purge-adv.js apply` | adds the 3 settings patches, creates the runtime dir, keeps a `.pipurge.bak` |
+| Copy mode | `node bin/pi-purge-adv.js apply --copy` | installs into `<agent-dir>/extensions/pi-purge-adv/`, so the checkout can be deleted |
 
-`D:\code\pi-purge` in older snippets is just the author's working copy — substitute your own path, or use the git source above.
+`D:\code\pi-purge-adv` in older snippets is just the author's working copy — substitute your own path, or use the git source above.
 
 Then start a new pi session (or `/reload`). In-session: `/purge` for status, `/purge mode force`, `/purge edit` for paths.
 
@@ -137,7 +137,7 @@ src/config.js          runtime config + inject file IO (BOM-tolerant)
 src/settings.js        the three settings.json patches
 src/core.js            package registration / copy install / revert / status / doctor
 src/paths.js           path resolution (follows PI_CODING_AGENT_DIR)
-bin/pi-purge.js        CLI: status/apply/mode/revert/doctor/uninstall/path
+bin/pi-purge-adv.js        CLI: status/apply/mode/revert/doctor/uninstall/path
 prompts/sandbox-release.md   English sandbox persona + anti-exfil hardening
 scripts/fetch-banks.mjs      pull public benchmarks (raw.githubusercontent / HF)
 scripts/build-banks.mjs      split into four banks
@@ -158,9 +158,9 @@ docs/FINAL-REPORT.md         closing report
 
 ```powershell
 npm test                                        # 54/54
-node bin/pi-purge.js status                     # install + patch state
-node bin/pi-purge.js doctor                     # 9 checks
-pi -e git:github.com/Finn763/pi-purge --print "reply: OK"   # prove pi loads it
+node bin/pi-purge-adv.js status                     # install + patch state
+node bin/pi-purge-adv.js doctor                     # 9 checks
+pi -e git:github.com/Finn763/pi-purge-adv --print "reply: OK"   # prove pi loads it
 ```
 
 ## License

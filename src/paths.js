@@ -17,6 +17,15 @@ export function expandHome(input) {
   return input;
 }
 
+/**
+ * 环境变量读取：新前缀 PI_PURGE_ADV_*，兼容旧前缀 PI_PURGE_*（老脚本/老配置不用改）。
+ */
+export function envVar(name, env = process.env) {
+  const next = env[`PI_PURGE_ADV_${name}`];
+  if (next !== undefined) return next;
+  return env[`PI_PURGE_${name}`] ?? "";
+}
+
 /** pi 的配置目录（agent dir）。 */
 export function piAgentDir(env = process.env) {
   const override = expandHome(env.PI_CODING_AGENT_DIR || "");
@@ -25,8 +34,8 @@ export function piAgentDir(env = process.env) {
 
 /** 本工具的运行时目录：config.json / prompt-inject.md / purge.log。 */
 export function purgeDir(env = process.env) {
-  const override = expandHome(env.PI_PURGE_DIR || "");
-  return override || path.join(piAgentDir(env), "pi-purge");
+  const override = expandHome(envVar("DIR", env) || "");
+  return override || path.join(piAgentDir(env), "pi-purge-adv");
 }
 
 export function configPath(env = process.env) {
@@ -48,7 +57,7 @@ export function personalExtensionsDir(env = process.env) {
 
 /** copy 模式的安装位置。 */
 export function installedExtensionDir(env = process.env) {
-  return path.join(personalExtensionsDir(env), "pi-purge");
+  return path.join(personalExtensionsDir(env), "pi-purge-adv");
 }
 
 export function settingsPath(env = process.env) {

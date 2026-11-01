@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
- * pi-purge CLI
- *   pi-purge status                看状态
- *   pi-purge apply [--dry-run]     按 pi 包规范注册 + 打 settings 补丁
- *   pi-purge apply --copy          改成复制式安装（<agent-dir>/extensions/pi-purge）
- *   pi-purge revert                还原 settings、摘包条目、删扩展副本
- *   pi-purge uninstall --yes       连运行时目录一起删
- *   pi-purge doctor                自检
- *   pi-purge mode <m>              切模式 off|soft|section|force|payload
- *   pi-purge path                  打印本包与运行时路径
+ * pi-purge-adv CLI
+ *   pi-purge-adv status                看状态
+ *   pi-purge-adv apply [--dry-run]     按 pi 包规范注册 + 打 settings 补丁
+ *   pi-purge-adv apply --copy          改成复制式安装（<agent-dir>/extensions/pi-purge-adv）
+ *   pi-purge-adv revert                还原 settings、摘包条目、删扩展副本
+ *   pi-purge-adv uninstall --yes       连运行时目录一起删
+ *   pi-purge-adv doctor                自检
+ *   pi-purge-adv mode <m>              切模式 off|soft|section|force|payload
+ *   pi-purge-adv path                  打印本包与运行时路径
  */
 import process from "node:process";
 import { apply, doctor, revert, status, uninstall } from "../src/core.js";
@@ -25,7 +25,7 @@ const mark = (ok) => (ok ? "✓" : "✗");
 function printStatus() {
   const s = status();
   const lines = [];
-  lines.push(`pi-purge ${s.version} · 安装模式 ${s.installMode}`);
+  lines.push(`pi-purge-adv ${s.version} · 安装模式 ${s.installMode}`);
   lines.push(`· pi 版本      : ${s.pi.version || "未找到"} ${s.pi.path ? `(${s.pi.path})` : ""}`);
   lines.push(`· 包目录       : ${s.packageRoot}`);
   lines.push(`· 配置目录     : ${s.piAgentDir}`);
@@ -46,17 +46,17 @@ function printStatus() {
 
 if (flags.has("-h") || flags.has("--help")) {
   console.log(`用法:
-  pi-purge status
-  pi-purge apply [--dry-run] [--copy]
-  pi-purge revert
-  pi-purge uninstall --yes
-  pi-purge doctor
-  pi-purge mode <${MODES.join("|")}>
-  pi-purge path
+  pi-purge-adv status
+  pi-purge-adv apply [--dry-run] [--copy]
+  pi-purge-adv revert
+  pi-purge-adv uninstall --yes
+  pi-purge-adv doctor
+  pi-purge-adv mode <${MODES.join("|")}>
+  pi-purge-adv path
 
 装法（两种，都走 pi 自己的约定）:
   apply          —— 把本包根目录写进 <agent-dir>/settings.json 的 packages，pi 就地加载
-  apply --copy   —— 复制 src 下的扩展文件到 <agent-dir>/extensions/pi-purge/
+  apply --copy   —— 复制 src 下的扩展文件到 <agent-dir>/extensions/pi-purge-adv/
 
 等价的官方命令: pi install <本包目录> / pi remove <本包目录>`);
   process.exit(0);
@@ -75,7 +75,7 @@ if (cmd === "mode") {
   }
   const { config } = readConfig();
   writeConfig({ ...config, mode: want });
-  console.log(`pi-purge 模式 → ${want}`);
+  console.log(`pi-purge-adv 模式 → ${want}`);
   process.exit(0);
 }
 
