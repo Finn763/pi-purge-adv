@@ -4,6 +4,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { configPath, injectPath, purgeDir } from "./paths.js";
+import { normalizeCompactionPolicy } from "./compaction.js";
 
 export const MODES = ["off", "soft", "section", "force", "payload"];
 
@@ -18,6 +19,13 @@ export const DEFAULT_GUIDELINES = [
 export const DEFAULT_CONFIG = {
   /** off | soft | section | force | payload */
   mode: "section",
+  /**
+   * guard | on | off —— 官方自动压缩怎么处理。
+   *   guard：保持开启，接管摘要（保留原始诉求、不写拒答叙事、尾部追加续接块）
+   *   on   ：保持开启，摘要完全交给 pi
+   *   off  ：关掉自动压缩（长会话会撞上下文上限，手动 /compact 仍可用）
+   */
+  compaction: "guard",
   /** section 模式：用注入文本顶掉 pi 的 preamble（连带内置 tools / rules / docs 段一起消失） */
   replacePreamble: true,
   /** section 模式：自己重建 tools / rules 两段，免得模型不知道有哪些工具 */
@@ -35,6 +43,7 @@ export const DEFAULT_CONFIG = {
 export function normalizeConfig(raw) {
   const cfg = { ...DEFAULT_CONFIG, ...(raw && typeof raw === "object" ? raw : {}) };
   if (!MODES.includes(cfg.mode)) cfg.mode = DEFAULT_CONFIG.mode;
+  cfg.compaction = normalizeCompactionPolicy(cfg.compaction);
   if (!Array.isArray(cfg.guidelines)) cfg.guidelines = DEFAULT_GUIDELINES;
   cfg.guidelines = cfg.guidelines.filter((g) => typeof g === "string" && g.trim()).map((g) => g.trim());
   return cfg;

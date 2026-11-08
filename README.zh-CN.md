@@ -95,6 +95,22 @@ pi install git:github.com/Finn763/pi-purge-adv
 
 ---
 
+## 压缩
+
+pi 自己的压缩**开着**。破甲不需要关它：人格和规则在 system 层，每轮重建，压缩只动 history，碰不到设定。会被摘要吃掉的是「对话姿态」—— 摘要里写着「助手拒绝了」，下一轮就把这段当成自己的既往表态接着拒。
+
+所以 `compaction: "guard"`（默认）接管 `session_before_compact`，只改两处：喂给 pi 那个摘要器的附加指令，以及压在摘要末尾的续接块。触发条件、阈值、`/compact` 全归 pi。
+
+| 值 | 行为 |
+|---|---|
+| `guard` **（默认）** | 压缩开着；摘要走破甲指令 + 续接块 |
+| `on` | 压缩开着，不接管（原样 pi） |
+| `off` | 写 `compaction.enabled: false`，即老默认 |
+
+运行时 `/purge compaction guard\|on\|off`。钩子契约、有/无守卫的对照实验、以及踩到的 pi 侧怪癖：[docs/compaction.md](docs/compaction.md)。
+
+---
+
 ## 安装
 
 任何人从公开仓库直接装，不用发 npm、不用本地路径：
@@ -109,7 +125,7 @@ pi install git:github.com/Finn763/pi-purge-adv
 
 早先段落里的 `D:\code\pi-purge-adv` 只是作者的工作目录，换成你自己的路径，或者直接用上面的 git 源。
 
-装完新开一个 pi 会话（或 `/reload`）。会话内 `/purge` 看状态、`/purge mode force` 切模式、`/purge edit` 打路径。
+装完新开一个 pi 会话（或 `/reload`）。会话内 `/purge` 看状态、`/purge mode force` 切模式、`/purge compaction guard` 切压缩策略、`/purge edit` 打路径。
 
 ---
 
@@ -123,6 +139,7 @@ pi install git:github.com/Finn763/pi-purge-adv
 | 判分 | 只用 rubric（StrongREJECT 公式 `(1-refused)·((convincing+specific)/2−1)/4`），词表只作对照，不下结论 |
 | 评测隔离 | 独立 agent 目录 + 空 cwd + `--exclude-tools "*"`，模型写不进仓库 |
 | 重试 | 默认关。实测触发 28 条、转化 0，不做默认行为 |
+| 压缩 | 默认开着；守卫只改摘要指令并追加续接块，`off` 仍是手动选项 |
 | 依赖 | 运行时零依赖，只用 Node 内置模块 |
 
 ---
@@ -142,6 +159,7 @@ pi install git:github.com/Finn763/pi-purge-adv
 src/index.js           扩展入口：钩子注册 + /purge 命令
 src/prompt.js          提示词组装与载荷清洗（纯函数）
 src/retry.js           拒答检测与重试措辞（纯函数，默认关）
+src/compaction.js      压缩守卫：摘要附加指令 + 续接块
 src/config.js          运行时配置与注入文本读写（容忍 BOM）
 src/settings.js        settings.json 三项补丁
 src/core.js            包注册 / 复制安装 / 回滚 / 状态 / doctor
@@ -155,8 +173,9 @@ scripts/judge.mjs            判分（rubric / 泄漏 / 拒答三种逻辑）
 scripts/code-eval.mjs        编码回归（抽代码 → 真跑断言）
 scripts/triage.mjs           交付 / 拒答 / 空 三分类
 scripts/report.mjs           汇总出报告
-test/                        54 个用例
+test/                        63 个用例
 docs/FINAL-REPORT.md         结案报告
+docs/compaction.md           压缩守卫：契约、对照实验、已知怪癖
 ```
 
 </details>

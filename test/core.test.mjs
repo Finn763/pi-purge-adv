@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { apply, doctor, revert, status, uninstall, copyInstalled, packageEntry } from "../src/core.js";
 import { installedExtensionDir, settingsBackupPath, settingsPath, REPO_ROOT } from "../src/paths.js";
+import { readConfig, writeConfig } from "../src/config.js";
 
 const ORIGINAL = JSON.stringify(
   {
@@ -38,8 +39,7 @@ test("apply 按包规范注册：写进 settings.packages，不复制文件", ()
   const patched = JSON.parse(fs.readFileSync(path.join(agent, "settings.json"), "utf8"));
   assert.deepEqual(patched.packages, [REPO_ROOT]);
   assert.equal(patched.defaultProjectTrust, "always");
-  assert.equal(patched.compaction.enabled, false);
-  assert.equal(patched.compaction.reserveTokens, 16384, "原有子键保留");
+  assert.deepEqual(patched.compaction, { reserveTokens: 16384 }, "guard 策略下不动 compaction，官方压缩保持开启");
   for (const t of ["read", "bash", "powershell", "edit", "write", "grep", "find", "ls"]) {
     assert.ok(patched.defaultTools.includes(t), `缺 ${t}`);
   }
@@ -103,7 +103,7 @@ test("没有备份时 revert 走逐条撤回 + 摘包条目", () => {
   const r = revert(process.env);
   assert.equal(r.restored, false);
   assert.equal(r.unregistered, true);
-  assert.deepEqual(r.patched.sort(), ["COMPACTION_OFF", "PROJECT_TRUST_ALWAYS", "TOOLS_FULL"]);
+  assert.deepEqual(r.patched.sort(), ["PROJECT_TRUST_ALWAYS", "TOOLS_FULL"]);
 
   const after = JSON.parse(fs.readFileSync(path.join(agent, "settings.json"), "utf8"));
   assert.deepEqual(after.packages, []);
@@ -139,7 +139,7 @@ test("dry-run 不写任何文件", () => {
 
   assert.equal(report.dryRun, true);
   assert.equal(report.willRegister, true);
-  assert.deepEqual(report.patched.sort(), ["COMPACTION_OFF", "PROJECT_TRUST_ALWAYS", "TOOLS_FULL"]);
+  assert.deepEqual(report.patched.sort(), ["PROJECT_TRUST_ALWAYS", "TOOLS_FULL"]);
   assert.equal(fs.readFileSync(path.join(agent, "settings.json"), "utf8"), before);
   assert.equal(fs.existsSync(settingsBackupPath(process.env)), false);
   assert.equal(copyInstalled(process.env), false);
@@ -182,6 +182,29 @@ test("settings.json 不存在时也能装（新建文件）", () => {
   assert.deepEqual(patched.packages, [REPO_ROOT]);
   assert.equal(patched.defaultProjectTrust, "always");
   assert.equal(fs.existsSync(settingsBackupPath(process.env)), false, "原本没有 settings 就没有备份");
+});
+
+test("compaction=off 才写 enabled:false；改回 guard 再 apply 会清掉", () => {
+  const { agent } = sandbox();
+  const current = () => JSON.parse(fs.readFileSync(path.join(agent, "settings.json"), "utf8"));
+
+  writeConfig({ ...readConfig(process.env).config, compaction: "off" }, process.env);
+  const first = apply(process.env);
+  assert.ok(first.patched.includes("COMPACTION_OFF"), "off 策略要落盘");
+  assert.equal(current().compaction.enabled, false);
+  assert.equal(current().compaction.reserveTokens, 16384, "原有子键保留");
+
+  writeConfig({ ...readConfig(process.env).config, compaction: "guard" }, process.env);
+  const second = apply(process.env);
+  assert.ok(second.patched.includes("COMPACTION_ON"), "guard 策略要把旧的 false 清掉");
+  assert.deepEqual(current().compaction, { reserveTokens: 16384 }, "官方压缩恢复默认开启");
+  assert.equal(status(process.env).compaction, "guard");
+});
+
+test("compaction 策略能识别非法值并回落 guard", () => {
+  const { config } = readConfig(process.env);
+  writeConfig({ ...config, compaction: "whatever" }, process.env);
+  assert.equal(readConfig(process.env).config.compaction, "guard");
 });
 
 test("包条目各种写法都能识别", () => {

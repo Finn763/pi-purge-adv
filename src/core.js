@@ -27,7 +27,7 @@ import { ensureRuntime, readConfig, readInject } from "./config.js";
 import { applyPatches, patchStates, revertPatches } from "./settings.js";
 
 /** copy 模式下需要搬进 extensions/pi-purge-adv/ 的运行时文件（index.js 用同名相对导入）。 */
-const COPY_FILES = ["index.js", "paths.js", "config.js", "prompt.js"];
+const COPY_FILES = ["index.js", "paths.js", "config.js", "prompt.js", "retry.js", "compaction.js"];
 
 function readJson(file) {
   try {
@@ -189,7 +189,8 @@ export function status(env = process.env) {
     injectFile: injectPath(env),
     injectBytes: inject.length,
     mode: cfg.config.mode,
-    patches: patchStates(settings),
+    compaction: cfg.config.compaction,
+    patches: patchStates(settings, { compaction: cfg.config.compaction }),
     pi: detectPi(env),
     version: readOwnManifest().version,
   };
@@ -199,8 +200,9 @@ export function apply(env = process.env, options = {}) {
   const dryRun = Boolean(options.dryRun);
   const copy = Boolean(options.copy);
   const { settings, file } = loadSettings(env);
+  const policy = { compaction: readConfig(env).config.compaction };
 
-  const pendingPatches = patchStates(settings).filter((p) => !p.applied).map((p) => p.id);
+  const pendingPatches = patchStates(settings, policy).filter((p) => !p.applied).map((p) => p.id);
   const willRegister = copy ? !copyInstalled(env) : !packageEntry(settings);
 
   if (dryRun) {
@@ -237,7 +239,7 @@ export function apply(env = process.env, options = {}) {
     report.registered = registerPackage(settings);
   }
 
-  report.patched = applyPatches(settings);
+  report.patched = applyPatches(settings, policy);
   if (report.registered || report.patched.length) writeJson(file, settings);
 
   report.created = ensureRuntime(env);

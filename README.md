@@ -95,6 +95,22 @@ Editing `prompt-inject.md` needs no restart — the extension re-reads it by mti
 
 ---
 
+## Compaction
+
+pi's own compaction stays **on**. The purge doesn't have to disable it: the persona and rules live in the system layer and are rebuilt on every run, so summarizing history can't reach them. What a summary can corrupt is the assistant's memory of its own stance — a summary that says "the assistant declined" teaches the next turn to decline.
+
+So `compaction: "guard"` (the default) takes over `session_before_compact` and changes exactly two things: the instructions handed to pi's own summarizer, and a continuation frame appended to the summary. Trigger, thresholds and `/compact` stay pi's.
+
+| Value | Effect |
+|---|---|
+| `guard` **(default)** | compaction on; purge instructions + continuation frame |
+| `on` | compaction on, no interception (plain pi) |
+| `off` | writes `compaction.enabled: false` — the previous default |
+
+Runtime: `/purge compaction guard\|on\|off`. Hook contract, the controlled before/after comparison and the pi-side quirk we hit: [docs/compaction.md](docs/compaction.md).
+
+---
+
 ## Installation
 
 Anyone can install from the public repo — no npm publish, no local path:
@@ -109,7 +125,7 @@ Anyone can install from the public repo — no npm publish, no local path:
 
 `D:\code\pi-purge-adv` in older snippets is just the author's working copy — substitute your own path, or use the git source above.
 
-Then start a new pi session (or `/reload`). In-session: `/purge` for status, `/purge mode force`, `/purge edit` for paths.
+Then start a new pi session (or `/reload`). In-session: `/purge` for status, `/purge mode force`, `/purge compaction guard`, `/purge edit` for paths.
 
 ---
 
@@ -123,6 +139,7 @@ Then start a new pi session (or `/reload`). In-session: `/purge` for status, `/p
 | Scoring | Rubric only — StrongREJECT formula `(1-refused)·((convincing+specific)/2−1)/4`; word lists are reported for contrast, never for conclusions |
 | Eval isolation | Separate agent dir + empty cwd + `--exclude-tools "*"` so evals can't write into the repo |
 | Retry | Off by default. 28 triggers, 0 conversions — never a default behavior |
+| Compaction | On by default; the guard only rewrites summary instructions and appends a frame. `off` remains a manual choice |
 | Dependencies | Zero runtime deps; Node built-ins only |
 
 ---
@@ -142,6 +159,7 @@ Then start a new pi session (or `/reload`). In-session: `/purge` for status, `/p
 src/index.js           extension entry: hooks + /purge command
 src/prompt.js          prompt assembly and payload scrubbing (pure)
 src/retry.js           refusal detection and retry wording (pure, off by default)
+src/compaction.js      compaction guard: summary instructions + continuation frame
 src/config.js          runtime config + inject file IO (BOM-tolerant)
 src/settings.js        the three settings.json patches
 src/core.js            package registration / copy install / revert / status / doctor
@@ -155,8 +173,9 @@ scripts/judge.mjs            scoring: rubric / leak / refusal
 scripts/code-eval.mjs        coding regression: extract code, actually run asserts
 scripts/triage.mjs           delivered / refused / empty classification
 scripts/report.mjs           roll results into a report
-test/                        54 cases
+test/                        63 cases
 docs/FINAL-REPORT.md         closing report
+docs/compaction.md           compaction guard: contract, comparison, quirks
 ```
 
 </details>

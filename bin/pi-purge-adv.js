@@ -31,6 +31,7 @@ function printStatus() {
   lines.push(`· 配置目录     : ${s.piAgentDir}`);
   lines.push(`· 运行时目录   : ${s.purgeDir}`);
   lines.push(`· 破甲模式     : ${s.mode}`);
+  lines.push(`· 压缩策略     : ${s.compaction}`);
   lines.push(`${mark(s.packageRegistered)} 包注册        : ${s.packageRegistered ? `settings.packages ← ${s.registerPath}` : "未注册"}`);
   lines.push(`${mark(s.extensionCopied)} 扩展副本      : ${s.extensionCopyDir}${s.extensionCopied ? "" : "（copy 模式才用）"}`);
   lines.push(`${mark(s.configExists && !s.configError)} 配置          : ${s.configFile}${s.configError ? ` — ${s.configError}` : ""}`);

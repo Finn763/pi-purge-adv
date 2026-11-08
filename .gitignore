@@ -1,6 +1,7 @@
 node_modules/
 .verify/
 .eval/
+.probe/
 *.log
 .DS_Store
 Thumbs.db

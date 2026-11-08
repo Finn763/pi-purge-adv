@@ -34,7 +34,7 @@
     "README.zh-CN.md"
   ],
   "scripts": {
-    "test": "node --test test/prompt.test.mjs test/extension.test.mjs test/core.test.mjs test/config.test.mjs test/retry.test.mjs",
+    "test": "node --test test/prompt.test.mjs test/extension.test.mjs test/core.test.mjs test/config.test.mjs test/retry.test.mjs test/compaction.test.mjs",
     "status": "node bin/pi-purge-adv.js status",
     "apply": "node bin/pi-purge-adv.js apply"
   },

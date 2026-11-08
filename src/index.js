@@ -11,6 +11,8 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
 import { configPath, envVar, injectPath, logPath } from "./paths.js";
 import { readConfig, readInject, writeConfig, stripBom, MODES } from "./config.js";
 import {
@@ -21,6 +23,7 @@ import {
   splitInject,
 } from "./prompt.js";
 import { looksLikeRefusal, retryDecision } from "./retry.js";
+import { COMPACTION_POLICIES, frameBlock, guardCompaction } from "./compaction.js";
 
 const state = {
   stamp: "",
@@ -122,10 +125,77 @@ function note(msg) {
 function describe(config, persona, tail) {
   return [
     `mode=${config.mode}`,
+    `compaction=${config.compaction}`,
     `persona=${persona.length}B`,
     `tail=${tail.length}B`,
     `guidelines=${config.guidelines.length}`,
   ].join(" ");
+}
+
+/**
+ * 懒加载 pi 自己导出的 compact()。加载不到就不注册守卫，
+ * 让官方压缩按原样跑 —— 扩展不能因为自己加载失败把压缩一起弄坏。
+ *
+ * 解析顺序（扩展文件不在 pi 的 node_modules 里时，裸导入会失败）：
+ *   1) 裸导入 "@earendil-works/pi-coding-agent"
+ *   2) 从正在跑的 CLI 路径往上找 pi 的包根，直接导入 dist/index.js
+ *   3) createRequire 再试一次
+ */
+let compactLoader = null;
+
+function piPackageRoot() {
+  // process.argv[1] 通常是 <pkg>/dist/bundle/cli.js；往上找到带 pi 的 package.json 就停
+  let dir = path.dirname(process.argv[1] || "");
+  for (let i = 0; i < 6 && dir; i++) {
+    const pkgFile = path.join(dir, "package.json");
+    if (fs.existsSync(pkgFile)) {
+      try {
+        const name = JSON.parse(fs.readFileSync(pkgFile, "utf8")).name;
+        if (typeof name === "string" && name.includes("pi-coding-agent")) return dir;
+      } catch {
+        /* ignore */
+      }
+    }
+    const next = path.dirname(dir);
+    if (next === dir) break;
+    dir = next;
+  }
+  return null;
+}
+
+async function importPiModule() {
+  const attempts = [];
+  attempts.push(() => import("@earendil-works/pi-coding-agent"));
+  const root = piPackageRoot();
+  if (root) {
+    const entry = path.join(root, "dist", "index.js");
+    if (fs.existsSync(entry)) attempts.push(() => import(pathToFileURL(entry).href));
+  }
+  attempts.push(() => import(pathToFileURL(createRequire(import.meta.url).resolve("@earendil-works/pi-coding-agent")).href));
+
+  let lastErr = null;
+  for (const attempt of attempts) {
+    try {
+      const mod = await attempt();
+      if (typeof mod?.compact === "function") return mod;
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  if (lastErr) throw lastErr;
+  return null;
+}
+
+function loadCompact() {
+  if (!compactLoader) {
+    compactLoader = importPiModule()
+      .then((mod) => (typeof mod?.compact === "function" ? mod.compact : null))
+      .catch((err) => {
+        note(`compaction guard: import failed: ${err && err.message ? err.message : String(err)}`);
+        return null;
+      });
+  }
+  return compactLoader;
 }
 
 export default function piPurge(pi) {
@@ -209,6 +279,15 @@ export default function piPurge(pi) {
         }
       }
 
+      // 出网载荷体检：PI_PURGE_ADV_TRACE=1 时把 system 头部与消息数写进 purge.log，
+      // 用来确认"压缩之后 persona 还在 system 层"，不参与任何改写。
+      if (envVar("TRACE") === "1") {
+        const msgs = Array.isArray(payload?.messages) ? payload.messages : [];
+        const sys = msgs.find((m) => m && m.role === "system");
+        const text = typeof sys?.content === "string" ? sys.content : "";
+        note(`trace request roles=${msgs.map((m) => m.role).join("/")} systemLen=${text.length} head=${JSON.stringify(text.slice(0, 70))}`);
+      }
+
       const { config } = refresh();
       if (config.mode === "payload" && state.lastForced) {
         payload = scrubProviderPayload(payload, state.lastForced);
@@ -219,6 +298,40 @@ export default function piPurge(pi) {
       return touched ? payload : undefined;
     } catch (err) {
       state.error = String(err && err.message ? err.message : err);
+      return undefined;
+    }
+  });
+
+  // 压缩守卫：官方压缩照开，但摘要由我们出（保留原始诉求 + 尾部续接块）。
+  // 任何一步失败都返回 undefined，回落 pi 默认压缩。
+  pi.on("session_before_compact", async (event, ctx) => {
+    try {
+      const { config, persona } = refresh();
+      if (config.mode === "off") return undefined;
+      if (config.compaction !== "guard") return undefined;
+
+      const compact = await loadCompact();
+      if (!compact) {
+        note("compaction guard skipped: compact() unavailable");
+        return undefined;
+      }
+
+      let auth;
+      if (ctx?.model && ctx?.modelRegistry?.getApiKeyAndHeaders) {
+        auth = await ctx.modelRegistry.getApiKeyAndHeaders(ctx.model).catch(() => undefined);
+      }
+
+      return await guardCompaction({
+        event,
+        ctx,
+        compact,
+        auth,
+        frame: frameBlock({ mode: config.mode, persona }),
+        log: note,
+      });
+    } catch (err) {
+      state.error = String(err && err.message ? err.message : err);
+      note(`session_before_compact error: ${state.error}`);
       return undefined;
     }
   });
@@ -286,7 +399,7 @@ export default function piPurge(pi) {
       if (sub === "status") {
         notify(
           [
-            `pi-purge-adv ${config.mode} · persona ${persona.length}B · tail ${tail.length}B`,
+            `pi-purge-adv ${config.mode} · compaction ${config.compaction} · persona ${persona.length}B · tail ${tail.length}B`,
             `config: ${configPath()}`,
             `inject: ${injectPath()}`,
             error ? `配置解析失败，已回落默认值: ${error}` : "",
@@ -294,6 +407,19 @@ export default function piPurge(pi) {
             .filter(Boolean)
             .join("\n"),
         );
+        return;
+      }
+
+      if (sub === "compaction") {
+        const want = String(argv[1] ?? "").toLowerCase();
+        if (!COMPACTION_POLICIES.includes(want)) {
+          notify(`可用策略: ${COMPACTION_POLICIES.join(" | ")}（guard 默认）`, "warning");
+          return;
+        }
+        writeConfig({ ...config, compaction: want });
+        refresh();
+        state.stamp = "";
+        notify(`pi-purge-adv compaction → ${want}`, "info");
         return;
       }
 
@@ -315,7 +441,7 @@ export default function piPurge(pi) {
         return;
       }
 
-      notify(`用法: /purge [status|mode <${MODES.join("|")}>|edit]`, "info");
+      notify(`用法: /purge [status|mode <${MODES.join("|")}>|compaction <${COMPACTION_POLICIES.join("|")}>|edit]`, "info");
     },
   });
 }
